@@ -1,0 +1,30 @@
+name: Build Semantic Kernel JAR
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build core module only
+        run: |
+          sed -i '/<module>aiservices\/google<\/module>/d' pom.xml
+          sed -i '/maven-enforcer-plugin/,/<\/plugin>/d' pom.xml
+          mvn clean install -DskipTests -Denforcer.skip=true
+
+      - name: Upload JAR
+        uses: actions/upload-artifact@v3
+        with:
+          name: semantickernel-core-jar
+          path: semantickernel-core/target/semantickernel-core-*.jar
